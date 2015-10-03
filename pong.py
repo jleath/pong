@@ -14,7 +14,7 @@ SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
 PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 40
-PADDLE_SPEED = 3
+PADDLE_SPEED = 10
 
 BALL_WIDTH = 10
 BALL_HEIGHT = 10
@@ -25,11 +25,13 @@ FPS = 60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+PADDLE_GAP = 0
+
 # Game objects
-paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, SCREEN_WIDTH - PADDLE_WIDTH, \
+paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, SCREEN_WIDTH-PADDLE_WIDTH-PADDLE_GAP, 
                  SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED)
-paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, 0, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, \
-                 PADDLE_SPEED)
+paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, 0 + PADDLE_GAP, 
+        SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED)
 ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED)
 
 clock = pygame.time.Clock()
@@ -74,6 +76,10 @@ while not done:
                     paddle1.y_vel = -1
                 if event.key == pygame.K_DOWN:
                     paddle1.y_vel = 1
+                if event.key == pygame.K_w:
+                    paddle2.y_vel = -1
+                if event.key == pygame.K_s:
+                    paddle2.y_vel = 1
                 if event.key == pygame.K_SPACE and not in_play:
                     ball.x_vel = random.choice([1, -1])
                     ball.y_vel = random.choice([1, -1])
@@ -83,12 +89,17 @@ while not done:
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     paddle1.y_vel = 0
+                if event.key == pygame.K_w or event.key == pygame.K_s:
+                    paddle2.y_vel = 0
 
         # Draw to game
         SCREEN.fill(BLACK)
-        SCREEN.blit(paddle1_surface, paddle1.get_position(SCREEN_WIDTH, SCREEN_HEIGHT))
-        SCREEN.blit(paddle2_surface, paddle2.get_position(SCREEN_WIDTH, SCREEN_HEIGHT))
-        SCREEN.blit(ball_surface, ball.get_position(SCREEN_WIDTH, SCREEN_HEIGHT))
+        SCREEN.blit(paddle1_surface, paddle1.get_position(SCREEN_WIDTH, 
+            SCREEN_HEIGHT))
+        SCREEN.blit(paddle2_surface, paddle2.get_position(SCREEN_WIDTH,
+            SCREEN_HEIGHT))
+        SCREEN.blit(ball_surface, ball.get_position(SCREEN_WIDTH, SCREEN_HEIGHT,
+                paddle1, paddle2))
         pygame.display.flip()
         clock.tick(FPS)
 

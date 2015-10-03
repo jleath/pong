@@ -63,21 +63,38 @@ class Ball():
     def get_size(self):
         return (self.width, self.height)
 
-    def get_position(self, scr_width, scr_height):
-        self.update_position(scr_width, scr_height)
+    def get_position(self, scr_width, scr_height, p1, p2):
+        self.update_position(scr_width, scr_height, p1, p2)
         return (self.x_pos, self.y_pos)
 
-    def update_position(self, scr_width, scr_height):
+    def _next_x_position(self):
+        return self.x_pos + self.x_vel * self.speed
+
+    def _check_for_paddle_collision(self, paddle1, paddle2):
         new_x = self.x_pos + self.x_vel * self.speed
         new_y = self.y_pos + self.y_vel * self.speed
-        if new_x > scr_width - self.width:
-            self.x_vel = -1 * (abs(random.random() - .5))
-        elif new_x < 0:
-            self.x_vel = 1 * (abs(random.random() - .5))
+        if new_x > paddle1.x_pos-self.width and new_x < paddle1.x_pos + paddle1.width \
+                and new_y > paddle1.y_pos and new_y < paddle1.y_pos + paddle1.height:
+            self.x_vel = -1
+        elif new_x < paddle2.x_pos + paddle2.width and new_x > paddle2.x_pos \
+                and new_y > paddle2.y_pos and new_y < paddle2.y_pos + paddle2.height:
+            self.x_vel = 1
+
+    def _check_for_wall_collision(self, scr_width, scr_height):
+        #new_x = self.x_pos + self.x_vel * self.speed
+        new_y = self.y_pos + self.y_vel * self.speed
+        #if new_x > scr_width - self.width:
+        #    self.x_vel = -1
+        #elif new_x < 0:
+        #    self.x_vel = 1
         if new_y > scr_height - self.height:
-            self.y_vel =  -1 * (abs(random.random() - .5))
+            self.y_vel =  -1
         elif new_y < 0:
-            self.y_vel = 1 * (abs(random.random() - .5))
+            self.y_vel = 1
+
+    def update_position(self, scr_width, scr_height, p1, p2):
+        self._check_for_paddle_collision(p1, p2)
+        self._check_for_wall_collision(scr_width, scr_height)
         self.x_pos += self.x_vel * self.speed
         self.y_pos += self.y_vel * self.speed
 
