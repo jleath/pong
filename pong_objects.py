@@ -26,6 +26,7 @@ class Choppy_AI(object):
         self.hit_zone_min = h_zone_min
         self.hit_zone_max = h_zone_max
         self.hit_zone = self.hit_zone_min
+        self.focused = False
 
     def set_intelligence(self):
         """ Sets a reaction time between AI_MAX_INTEL and AN_MIN_INTEL and
@@ -41,6 +42,33 @@ class Choppy_AI(object):
     def _update_intelligence(self):
         """ Set a new random hit-zone area. """
         self.hit_zone = random.randint(self.hit_zone_min, self.hit_zone_max)
+
+    def unfocus(self):
+        self.reaction_time = self.set_intelligence()
+        self.focused = False
+
+    def focus(self, ball, paddle1, paddle2, elapsed):
+        self.reaction_time *= 3
+        self.focused = True
+        ball_copy = Ball(ball.width, ball.x_pos, ball.y_pos, ball.speed,
+                ball._screen_info, None, None, None, None)
+        ball_copy.x_vel = ball.x_vel
+        ball_copy.y_vel = ball.y_vel
+        while (ball_copy.x_pos > PADDLE_GAP):
+            while ball_copy.y_pos > 0 and ball_copy.y_pos < ball_copy._screen_info.height:
+                ball_copy.x_pos += ball_copy.x_vel * (ball_copy.speed * elapsed)
+                ball_copy.y_pos += ball_copy.y_vel * (ball_copy.speed * elapsed)
+                if ball_copy.x_pos < 0:
+                    break
+            if ball_copy.y_pos <= 0 and ball_copy.x_pos > 0:
+                ball_copy.y_pos = 1
+            if ball_copy.y_pos >= ball_copy._screen_info.height and ball_copy.x_pos > 0:
+                ball_copy.y_pos = ball_copy._screen_info.height - 1
+            ball_copy.y_vel *= -1
+        print('expected y-intercept:', ball_copy.y_pos)
+        return ball_copy
+        
+        
 
     def update(self, paddle, ball):
         """ This is where the AI will act.  If enough time has passed for the
@@ -59,7 +87,7 @@ class Choppy_AI(object):
             if ball.y_vel >= 0 and paddle_mid + self.hit_zone < ball_mid:
                 return 1
             # if the ball is above the paddles hit zone
-            elif ball.y_vel <= 0 and paddle_mid - self.hit_zone > ball_mid:
+            if ball.y_vel <= 0 and paddle_mid - self.hit_zone > ball_mid:
                 return -1
             else:
                 return 0
@@ -194,14 +222,16 @@ class Ball(Pong_Object):
             delta_y = self.y_pos - (paddle1.y_pos + paddle1.height / 2)
             self.x_vel = -1
             self.y_vel = delta_y * 0.075 + (paddle1.y_vel / 2)
-            self.bat_hit_snd.play()
+            if self.bat_hit_snd:
+                self.bat_hit_snd.play()
         # check if the ball will collide with the left paddle (player 2)
         elif new_x < paddle2.x_pos + paddle2.width and new_x > paddle2.x_pos \
                 and new_y > paddle2.y_pos and new_y < paddle2.y_pos + paddle2.height:
             delta_y = self.y_pos - (paddle2.y_pos + paddle2.height / 2)
             self.x_vel = 1
             self.y_vel = delta_y * 0.075 + (paddle2.y_vel / 2)
-            self.bat_hit_snd.play()
+            if self.bat_hit_snd:
+                self.bat_hit_snd.play()
 
     def _check_for_wall_collision(self, elapsed):
         """ A private method for handling wall collision. We only need to bounce off
@@ -211,11 +241,13 @@ class Ball(Pong_Object):
         # check for collision with the bottom of the screen
         if new_y > self._screen_info.height - self.height:
             self.y_vel *= -1
-            self.wall_hit_snd.play()
+            if self.wall_hit_snd:
+                self.wall_hit_snd.play()
         # check for collision with the top of the screen
         elif new_y < 0:
             self.y_vel *= -1
-            self.wall_hit_snd.play()
+            if self.wall_hit_snd:
+                self.wall_hit_snd.play()
 
     def update_position(self, p1, p2, elapsed):
         """
@@ -247,6 +279,7 @@ class Ball(Pong_Object):
             return True
         elif self.x_pos < 0:
             self.score_snd.play()
+            print('Actual y-intercept:', self.y_pos)
             paddle2.score += 1
             return True
         else:
