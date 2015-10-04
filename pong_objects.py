@@ -129,8 +129,10 @@ class Pong_Object(object):
 
 class Paddle(Pong_Object):
     """ A class for representing a paddle in pong.  Inherits from Pong_Object. """
-    def __init__(self, pad_width, pad_height, x, y, move_speed, screen):
-        Pong_Object.__init__(self, pad_width, pad_height, x, y, move_speed, screen)
+    def __init__(self, pad_width, pad_height, x, y, move_speed, screen,
+            obj_color=(255,255,255)):
+        Pong_Object.__init__(self, pad_width, pad_height, x, y, move_speed,
+                screen, obj_color=obj_color)
 
     def get_surface(self):
         """ Returns a surface for a paddle.  The surface will have the width
@@ -143,8 +145,10 @@ class Paddle(Pong_Object):
 
 class Ball(Pong_Object):
     """ A class for representing a ball in pong.  Inherits from Pong_Object. """
-    def __init__(self, ball_diameter, x, y, move_speed, screen):
-        Pong_Object.__init__(self, ball_diameter, ball_diameter, x, y, move_speed, screen)
+    def __init__(self, ball_diameter, x, y, move_speed, screen, 
+            obj_color=(255, 255, 255)):
+        Pong_Object.__init__(self, ball_diameter, ball_diameter, x, y,
+                move_speed, screen, obj_color=obj_color)
 
     def get_position(self, p1, p2):
         """ 
