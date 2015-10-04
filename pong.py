@@ -6,6 +6,13 @@ import random
 random.seed(None)
 pygame.init()
 
+if not pygame.font.get_init():
+    print('Pygame: Font module failed to load.')
+if not pygame.mixer.get_init():
+    print('Pygame: Mixer module failed to load.')
+if not pygame.display.get_init():
+    print('Pygame: Display module failed to load.')
+
 font = pygame.font.Font(pygame.font.get_default_font(), 16)
 
 AI_MAX_INTEL = 0
@@ -34,6 +41,22 @@ GREEN = (0, 255, 0)
 
 PADDLE_GAP = 10
 
+BAT_HIT_SND = 'bat_hit.wav'
+WALL_HIT_SND = 'wall_hit.wav'
+SCORE_SND = 'score_snd.wav'
+POINT_LOST_SND = 'point_lost_snd.wav'
+
+MUTING_INST = font.render("Press 'M' to mute the game.", 0, WHITE)
+START_INST = font.render("Press 'SPACE' to start a match.", 0, WHITE)
+MOVEMENT_INST = font.render("Press 'UP' to move up and 'DOWN' to move down.",
+        0, WHITE)
+QUIT_INST = font.render("Press 'Q' to quit the game.", 0, WHITE)
+
+bat_hit_snd = pygame.mixer.Sound(BAT_HIT_SND)
+wall_hit_snd = pygame.mixer.Sound(WALL_HIT_SND)
+score_snd = pygame.mixer.Sound(SCORE_SND)
+point_lost_snd = pygame.mixer.Sound(POINT_LOST_SND)
+
 # Game objects
 screen_info = Screen(SCREEN_WIDTH, SCREEN_HEIGHT)
 paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, SCREEN_WIDTH-PADDLE_WIDTH-PADDLE_GAP, 
@@ -42,10 +65,9 @@ paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, SCREEN_WIDTH-PADDLE_WIDTH-PADDLE_G
 paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, 0 + PADDLE_GAP, 
         SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info, obj_color=GREEN)
 ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED, screen_info,
-        obj_color=GREEN)
+       bat_hit_snd, wall_hit_snd, score_snd, point_lost_snd, obj_color=GREEN)
 
 clock = pygame.time.Clock()
-
 
 SCREEN = pygame.display.set_mode(SCREEN_SIZE)
 
@@ -67,9 +89,6 @@ elapsed = 0.0
 # Main game loop
 while not done:
     seconds = elapsed / 1000.0
-    caption = 'This AI is ' + str(enemy_ai.reaction_time) + '% dumb!'
-    caption += ' It\'s hit zone is ' + str(enemy_ai.hit_zone)
-    text = font.render(caption, 0, WHITE)
     for event in pygame.event.get():
         if event.type == QUIT:
             done = True
@@ -90,17 +109,23 @@ while not done:
                 paddle1.y_vel = 0
     paddle2.y_vel = enemy_ai.update(paddle2, ball)
 
-    if ball.is_dead_ball():
+    if ball.is_dead_ball(paddle1, paddle2):
         ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED,
-                screen_info)
+                screen_info, bat_hit_snd, wall_hit_snd, score_snd, point_lost_snd)
         in_play = False
 
     # Draw to game
     SCREEN.fill(BLACK)
-    SCREEN.blit(text, (0, 0))
     SCREEN.blit(paddle1_surface, paddle1.get_position(seconds))
     SCREEN.blit(paddle2_surface, paddle2.get_position(seconds))
     SCREEN.blit(ball_surface, ball.get_position(paddle1, paddle2, seconds))
+
+    # draw text
+    SCREEN.blit(font.render(str(paddle1.score), 0, WHITE),
+            (SCREEN_WIDTH / 4, SCREEN_HEIGHT - 25))
+    SCREEN.blit(font.render(str(paddle2.score), 0, WHITE), 
+            (SCREEN_WIDTH - (SCREEN_WIDTH / 4), SCREEN_HEIGHT - 25))
+    
     pygame.display.flip()
     elapsed = clock.tick(FPS)
 

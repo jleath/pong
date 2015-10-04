@@ -22,8 +22,8 @@ class Choppy_AI(object):
         self.ai_min_intel = min_intel
         self.ai_max_intel = max_intel
         self.reaction_time = 0
-        self.hit_zone_min = 10
-        self.hit_zone_max = 20
+        self.hit_zone_min = 15
+        self.hit_zone_max = 25
         self.hit_zone = self.hit_zone_min
 
     def set_intelligence(self):
@@ -138,6 +138,7 @@ class Paddle(Pong_Object):
             obj_color=(255,255,255)):
         Pong_Object.__init__(self, pad_width, pad_height, x, y, move_speed,
                 screen, obj_color=obj_color)
+        self.score = 0
 
     def get_surface(self):
         """ Returns a surface for a paddle.  The surface will have the width
@@ -150,10 +151,14 @@ class Paddle(Pong_Object):
 
 class Ball(Pong_Object):
     """ A class for representing a ball in pong.  Inherits from Pong_Object. """
-    def __init__(self, ball_diameter, x, y, move_speed, screen, 
-            obj_color=(255, 255, 255)):
+    def __init__(self, ball_diameter, x, y, move_speed, screen, bat_hit_sound, wall_hit_sound,
+            score_sound, point_lost_sound, obj_color=(255, 255, 255)):
         Pong_Object.__init__(self, ball_diameter, ball_diameter, x, y,
                 move_speed, screen, obj_color=obj_color)
+        self.bat_hit_snd = bat_hit_sound
+        self.wall_hit_snd = wall_hit_sound
+        self.score_snd = score_sound
+        self.point_lost_snd = point_lost_sound
 
     def get_position(self, p1, p2, elapsed):
         """ 
@@ -174,13 +179,15 @@ class Ball(Pong_Object):
                 and new_y > paddle1.y_pos and new_y < paddle1.y_pos + paddle1.height:
             delta_y = self.y_pos - (paddle1.y_pos + paddle1.height / 2)
             self.x_vel = -1
-            self.y_vel = delta_y * 0.1 + (paddle1.y_vel / 2)
+            self.y_vel = delta_y * 0.075 + (paddle1.y_vel / 2)
+            self.bat_hit_snd.play()
         # check if the ball will collide with the left paddle (player 2)
         elif new_x < paddle2.x_pos + paddle2.width and new_x > paddle2.x_pos \
                 and new_y > paddle2.y_pos and new_y < paddle2.y_pos + paddle2.height:
             delta_y = self.y_pos - (paddle2.y_pos + paddle2.height / 2)
             self.x_vel = 1
-            self.y_vel = delta_y * 0.1 + (paddle2.y_vel / 2)
+            self.y_vel = delta_y * 0.075 + (paddle2.y_vel / 2)
+            self.bat_hit_snd.play()
 
     def _check_for_wall_collision(self, elapsed):
         """ A private method for handling wall collision. We only need to bounce off
@@ -190,9 +197,11 @@ class Ball(Pong_Object):
         # check for collision with the bottom of the screen
         if new_y > self._screen_info.height - self.height:
             self.y_vel *= -1
+            self.wall_hit_snd.play()
         # check for collision with the top of the screen
         elif new_y < 0:
             self.y_vel *= -1
+            self.wall_hit_snd.play()
 
     def update_position(self, p1, p2, elapsed):
         """
@@ -216,6 +225,15 @@ class Ball(Pong_Object):
         surf.convert_alpha()
         return surf
 
-    def is_dead_ball(self):
+    def is_dead_ball(self, paddle1, paddle2):
         """ Returns True if the ball has gone outside the bounds of the screen. """
-        return self.x_pos > self._screen_info.width or self.x_pos < 0
+        if self.x_pos > self._screen_info.width:
+            self.point_lost_snd.play()
+            paddle1.score += 1
+            return True
+        elif self.x_pos < 0:
+            self.score_snd.play()
+            paddle2.score += 1
+            return True
+        else:
+            return False
