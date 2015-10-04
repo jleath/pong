@@ -8,8 +8,9 @@ pygame.init()
 
 font = pygame.font.Font(pygame.font.get_default_font(), 16)
 
-ai_reaction_time = random.randint(0, 100)
-frames_since_last_ai_move = 0
+AI_MAX_INTEL = 10
+AI_MIN_INTEL = 20
+enemy_ai = Choppy_AI(AI_MIN_INTEL, AI_MAX_INTEL)
 
 # constants
 
@@ -19,11 +20,11 @@ SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
 PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 40
-PADDLE_SPEED = 10
+PADDLE_SPEED = 8
 
 BALL_WIDTH = 10
 BALL_HEIGHT = 10
-BALL_SPEED = 3
+BALL_SPEED = 6
 
 FPS = 60
 
@@ -41,6 +42,7 @@ paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, 0 + PADDLE_GAP,
 ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED, screen_info)
 
 clock = pygame.time.Clock()
+
 
 SCREEN = pygame.display.set_mode(SCREEN_SIZE)
 
@@ -60,7 +62,8 @@ in_play = False
 
 # Main game loop
 while not done:
-    text = font.render('This is a game of PONG suckas', 0, WHITE)
+    caption = 'This AI is ' + str(enemy_ai.reaction_time) + '% dumb!'
+    text = font.render(caption, 0, WHITE)
     for event in pygame.event.get():
         if event.type == QUIT:
             done = True
@@ -71,32 +74,20 @@ while not done:
                 paddle1.y_vel = -1
             if event.key == pygame.K_DOWN:
                 paddle1.y_vel = 1
-            #if event.key == pygame.K_w:
-            #    paddle2.y_vel = -1
-            #if event.key == pygame.K_s:
-            #    paddle2.y_vel = 1
             if event.key == pygame.K_SPACE and not in_play:
                 ball.x_vel = random.choice([1, -1])
                 ball.y_vel = random.choice([1, -1])
-                ai_reaction_time = random.randint(0, 100)
-                frames_since_last_ai_move = 0
+                enemy_ai.set_intelligence()
                 in_play = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                 paddle1.y_vel = 0
-            #if event.key == pygame.K_w or event.key == pygame.K_s:
-            #    paddle2.y_vel = 0
-    if (frames_since_last_ai_move == ai_reaction_time):
-        paddle2.y_vel = ball.y_vel
-        frames_since_last_ai_move = 0
-
+    paddle2.y_vel = enemy_ai.update(paddle2, ball)
 
     if ball.is_dead_ball():
         ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED,
                 screen_info)
         in_play = False
-
-    frames_since_last_ai_move += 1
 
     # Draw to game
     SCREEN.fill(BLACK)
@@ -105,7 +96,6 @@ while not done:
     SCREEN.blit(paddle2_surface, paddle2.get_position())
     SCREEN.blit(ball_surface, ball.get_position(paddle1, paddle2))
     pygame.display.flip()
-    clock.tick(FPS)
 
 pygame.quit()
 sys.exit()

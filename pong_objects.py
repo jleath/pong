@@ -5,6 +5,32 @@ import random
 
 random.seed(None)
 
+class Choppy_AI(object):
+    def __init__(self, min_intel, max_intel):
+        self.frames_since_last_move = 0
+        self.ai_min_intel = min_intel
+        self.ai_max_intel = max_intel
+        self.reaction_time = 0
+
+    def set_intelligence(self):
+        self.reaction_time = random.randint(self.ai_max_intel, self.ai_min_intel) 
+        self.frames_since_last_move = 0
+
+    def update(self, paddle, ball):
+        if self.frames_since_last_move == self.reaction_time:
+            paddle_mid = paddle.y_pos + (paddle.height / 2)
+            ball_mid = ball.y_pos + (ball.height / 2)
+            if ball.y_vel > 0 and paddle_mid < ball_mid:
+                return 1
+            elif ball.y_vel < 0 and paddle_mid > ball_mid:
+                return -1
+            else:
+                return 0
+            self.frames_since_last_move = 0
+        else:
+            self.frames_since_last_move += 1
+            return 0
+
 class Screen(object):
     """ A datatype for representing a display screen's width and height. """
     def __init__(self, scr_width, scr_height):
@@ -125,7 +151,7 @@ class Ball(Pong_Object):
                 and new_y > paddle2.y_pos and new_y < paddle2.y_pos + paddle2.height:
             self.x_vel = 1
 
-    def _check_for_wall_collision(self):
+    def _check_for_wall_collision(self ):
         """ A private method for handling wall collision. We only need to bounce off
         the top and bottom of the screen.
         """
