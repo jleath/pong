@@ -6,6 +6,17 @@ import random
 random.seed(None)
 
 class Choppy_AI(object):
+    """ This is a preliminary version of the enemy AI.  I'm not entirely happy
+    with it.  It works by randomly setting a reaction time which is
+    just simply a number of frames that must be drawn before the ai can act.
+    This reaction time is a random number between MIN_INTEL and MAX_INTEL.
+    So if the reaction time is 15, the ai will update its paddle's position
+    every 15 frames.
+    The problem with this is that the movement of the AI's paddle is very choppy.
+    I'm going to try to fix this in the methods for drawing the paddle rather than
+    messing with the AI too much because I like this particular method.  It is
+    simple and works pretty well.
+    """
     def __init__(self, min_intel, max_intel):
         self.frames_since_last_move = 0
         self.ai_min_intel = min_intel
@@ -13,10 +24,17 @@ class Choppy_AI(object):
         self.reaction_time = 0
 
     def set_intelligence(self):
+        """ Sets a reaction time between AI_MAX_INTEL and AN_MIN_INTEL and
+        resets the frames counter.
+        """
         self.reaction_time = random.randint(self.ai_max_intel, self.ai_min_intel) 
         self.frames_since_last_move = 0
 
     def update(self, paddle, ball):
+        """ This is where the AI will act.  If enough time has passed for the
+        AI to react, it will move its paddle's position to track the ball.
+        Otherwise, it will just increment the frame counter and wait.
+        """
         if self.frames_since_last_move == self.reaction_time:
             paddle_mid = paddle.y_pos + (paddle.height / 2)
             ball_mid = ball.y_pos + (ball.height / 2)
