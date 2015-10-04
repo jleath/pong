@@ -1,6 +1,7 @@
 import pygame, sys
 from pygame.locals import *
 from pong_objects import *
+from pong_locals import *
 import random
 
 random.seed(None)
@@ -15,43 +16,15 @@ if not pygame.display.get_init():
 
 font = pygame.font.Font(pygame.font.get_default_font(), 16)
 
-AI_MAX_INTEL = 0
-AI_MIN_INTEL = 10
-enemy_ai = Choppy_AI(AI_MIN_INTEL, AI_MAX_INTEL)
+enemy_ai = Choppy_AI(AI_MIN_INTEL, AI_MAX_INTEL, AI_HIT_ZONE_MIN, AI_HIT_ZONE_MAX)
 
-# constants
+# font surfaces
+MUTING_INST = font.render(MUTE_INST_TEXT, 0, WHITE)
+START_INST = font.render(START_INST_TEXT, 0, WHITE)
+MOVEMENT_INST = font.render(MOVE_INST_TEXT, 0, WHITE)
+QUIT_INST = font.render(QUIT_INST_TEXT, 0, WHITE)
 
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 600
-SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-
-PADDLE_WIDTH = 10
-PADDLE_HEIGHT = 50
-PADDLE_SPEED = 300
-
-BALL_WIDTH = 10
-BALL_HEIGHT = 10
-BALL_SPEED = 200
-
-FPS = 60
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)
-
-PADDLE_GAP = 10
-
-BAT_HIT_SND = 'bat_hit.wav'
-WALL_HIT_SND = 'wall_hit.wav'
-SCORE_SND = 'score_snd.wav'
-POINT_LOST_SND = 'point_lost_snd.wav'
-
-MUTING_INST = font.render("Press 'M' to mute the game.", 0, WHITE)
-START_INST = font.render("Press 'SPACE' to start a match.", 0, WHITE)
-MOVEMENT_INST = font.render("Press 'UP' to move up and 'DOWN' to move down.",
-        0, WHITE)
-QUIT_INST = font.render("Press 'Q' to quit the game.", 0, WHITE)
-
+# sound objects
 bat_hit_snd = pygame.mixer.Sound(BAT_HIT_SND)
 wall_hit_snd = pygame.mixer.Sound(WALL_HIT_SND)
 score_snd = pygame.mixer.Sound(SCORE_SND)
@@ -59,12 +32,11 @@ point_lost_snd = pygame.mixer.Sound(POINT_LOST_SND)
 
 # Game objects
 screen_info = Screen(SCREEN_WIDTH, SCREEN_HEIGHT)
-paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, SCREEN_WIDTH-PADDLE_WIDTH-PADDLE_GAP, 
-                 SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info,
-                 obj_color=GREEN)
-paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, 0 + PADDLE_GAP, 
-        SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info, obj_color=GREEN)
-ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED, screen_info,
+paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE1_START_X, PADDLE1_START_Y, 
+        PADDLE_SPEED, screen_info, obj_color=GREEN)
+paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE2_START_X, PADDLE2_START_Y,
+        PADDLE_SPEED, screen_info, obj_color=GREEN)
+ball = Ball(BALL_WIDTH, BALL_START_X, BALL_START_Y, BALL_SPEED, screen_info,
        bat_hit_snd, wall_hit_snd, score_snd, point_lost_snd, obj_color=GREEN)
 
 clock = pygame.time.Clock()
@@ -72,7 +44,7 @@ clock = pygame.time.Clock()
 SCREEN = pygame.display.set_mode(SCREEN_SIZE)
 
 # prepare display surface 
-pygame.display.set_caption('PONG')
+pygame.display.set_caption(CAPTION_TEXT)
 SCREEN.fill(BLACK)
 SCREEN.convert_alpha()
 
@@ -110,7 +82,7 @@ while not done:
     paddle2.y_vel = enemy_ai.update(paddle2, ball)
 
     if ball.is_dead_ball(paddle1, paddle2):
-        ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED,
+        ball = Ball(BALL_WIDTH, BALL_START_X, BALL_START_Y, BALL_SPEED,
                 screen_info, bat_hit_snd, wall_hit_snd, score_snd, point_lost_snd)
         in_play = False
 

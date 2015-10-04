@@ -2,6 +2,7 @@
 
 import pygame
 import random
+from pong_locals import *
 
 random.seed(None)
 
@@ -17,13 +18,13 @@ class Choppy_AI(object):
     messing with the AI too much because I like this particular method.  It is
     simple and works pretty well.
     """
-    def __init__(self, min_intel, max_intel):
+    def __init__(self, min_intel, max_intel, h_zone_min, h_zone_max):
         self.frames_since_last_move = 0
         self.ai_min_intel = min_intel
         self.ai_max_intel = max_intel
-        self.reaction_time = 0
-        self.hit_zone_min = 15
-        self.hit_zone_max = 25
+        self.reaction_time = self.set_intelligence()
+        self.hit_zone_min = h_zone_min
+        self.hit_zone_max = h_zone_max
         self.hit_zone = self.hit_zone_min
 
     def set_intelligence(self):
@@ -33,18 +34,31 @@ class Choppy_AI(object):
         self.reaction_time = random.randint(self.ai_max_intel, self.ai_min_intel) 
         self.frames_since_last_move = 0
 
+    def _time_to_update_intelligence(self):
+        """ We will update the AI's hit-zone randomly."""
+        return random.randint(self.hit_zone_min, self.hit_zone_max) == self.hit_zone
+
+    def _update_intelligence(self):
+        """ Set a new random hit-zone area. """
+        self.hit_zone = random.randint(self.hit_zone_min, self.hit_zone_max)
+
     def update(self, paddle, ball):
         """ This is where the AI will act.  If enough time has passed for the
         AI to react, it will move its paddle's position to track the ball.
         Otherwise, it will just increment the frame counter and wait.
+        The AI also has a 'hit-zone' which is the area of the paddle that
+        it will try to hit the ball with. This will vary randomly throughout 
+        the game.
         """
         if self.frames_since_last_move == self.reaction_time:
-            if random.randint(self.hit_zone_min, self.hit_zone_max) == self.hit_zone:
-                self.hit_zone = random.randint(self.hit_zone_min, self.hit_zone_max)
+            if self._time_to_update_intelligence():
+                self._update_intelligence()
             paddle_mid = paddle.y_pos + (paddle.height / 2)
             ball_mid = ball.y_pos + (ball.height / 2)
+            # if the ball is below the paddles hit zone
             if ball.y_vel >= 0 and paddle_mid + self.hit_zone < ball_mid:
                 return 1
+            # if the ball is above the paddles hit zone
             elif ball.y_vel <= 0 and paddle_mid - self.hit_zone > ball_mid:
                 return -1
             else:
