@@ -30,16 +30,19 @@ FPS = 60
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
 
 PADDLE_GAP = 10
 
 # Game objects
 screen_info = Screen(SCREEN_WIDTH, SCREEN_HEIGHT)
 paddle1 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, SCREEN_WIDTH-PADDLE_WIDTH-PADDLE_GAP, 
-                 SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info)
+                 SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info,
+                 obj_color=GREEN)
 paddle2 = Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, 0 + PADDLE_GAP, 
-        SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info)
-ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED, screen_info)
+        SCREEN_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_SPEED, screen_info, obj_color=GREEN)
+ball = Ball(BALL_WIDTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BALL_SPEED, screen_info,
+        obj_color=GREEN)
 
 clock = pygame.time.Clock()
 
