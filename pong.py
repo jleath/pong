@@ -19,12 +19,12 @@ SCREEN_HEIGHT = 600
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
 PADDLE_WIDTH = 10
-PADDLE_HEIGHT = 40
-PADDLE_SPEED = 8
+PADDLE_HEIGHT = 50
+PADDLE_SPEED = 7
 
 BALL_WIDTH = 10
 BALL_HEIGHT = 10
-BALL_SPEED = 6
+BALL_SPEED = 4
 
 FPS = 60
 
@@ -66,6 +66,7 @@ in_play = False
 # Main game loop
 while not done:
     caption = 'This AI is ' + str(enemy_ai.reaction_time) + '% dumb!'
+    caption += ' It\'s hit zone is ' + str(enemy_ai.hit_zone)
     text = font.render(caption, 0, WHITE)
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -99,6 +100,7 @@ while not done:
     SCREEN.blit(paddle2_surface, paddle2.get_position())
     SCREEN.blit(ball_surface, ball.get_position(paddle1, paddle2))
     pygame.display.flip()
+    clock.tick(FPS)
 
 pygame.quit()
 sys.exit()

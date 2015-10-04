@@ -22,6 +22,9 @@ class Choppy_AI(object):
         self.ai_min_intel = min_intel
         self.ai_max_intel = max_intel
         self.reaction_time = 0
+        self.hit_zone_min = 10
+        self.hit_zone_max = 20
+        self.hit_zone = self.hit_zone_min
 
     def set_intelligence(self):
         """ Sets a reaction time between AI_MAX_INTEL and AN_MIN_INTEL and
@@ -36,11 +39,13 @@ class Choppy_AI(object):
         Otherwise, it will just increment the frame counter and wait.
         """
         if self.frames_since_last_move == self.reaction_time:
+            if random.randint(self.hit_zone_min, self.hit_zone_max) == self.hit_zone:
+                self.hit_zone = random.randint(self.hit_zone_min, self.hit_zone_max)
             paddle_mid = paddle.y_pos + (paddle.height / 2)
             ball_mid = ball.y_pos + (ball.height / 2)
-            if ball.y_vel > 0 and paddle_mid < ball_mid:
+            if ball.y_vel >= 0 and paddle_mid + self.hit_zone < ball_mid:
                 return 1
-            elif ball.y_vel < 0 and paddle_mid > ball_mid:
+            elif ball.y_vel <= 0 and paddle_mid - self.hit_zone > ball_mid:
                 return -1
             else:
                 return 0
@@ -167,11 +172,15 @@ class Ball(Pong_Object):
         # check if the ball will collide with the right paddle (player 1)
         if new_x > paddle1.x_pos-self.width and new_x < paddle1.x_pos + paddle1.width \
                 and new_y > paddle1.y_pos and new_y < paddle1.y_pos + paddle1.height:
+            delta_y = self.y_pos - (paddle1.y_pos + paddle1.height / 2)
             self.x_vel = -1
+            self.y_vel = delta_y * 0.1 + (paddle1.y_vel / 2)
         # check if the ball will collide with the left paddle (player 2)
         elif new_x < paddle2.x_pos + paddle2.width and new_x > paddle2.x_pos \
                 and new_y > paddle2.y_pos and new_y < paddle2.y_pos + paddle2.height:
+            delta_y = self.y_pos - (paddle2.y_pos + paddle2.height / 2)
             self.x_vel = 1
+            self.y_vel = delta_y * 0.1 + (paddle2.y_vel / 2)
 
     def _check_for_wall_collision(self ):
         """ A private method for handling wall collision. We only need to bounce off
