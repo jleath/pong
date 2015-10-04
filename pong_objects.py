@@ -90,19 +90,19 @@ class Pong_Object(object):
         """ Returns a tuple containing the width and height of the object. """
         return (self.width, self.height)
 
-    def get_position(self):
+    def get_position(self, elapsed):
         """ Returns a tuple containing the position of the object.
         Will update the position of the object based on game state.
         """
-        self._update_position()
+        self._update_position(elapsed)
         return (self.x_pos, self.y_pos)
 
-    def _update_position(self):
+    def _update_position(self, elapsed):
         """ Updates the position of the object, based on its current velocity
         and position.  this is where collision handling will occur.
         """
-        new_x = self._next_x_position()
-        new_y = self._next_y_position()
+        new_x = self._next_x_position(elapsed)
+        new_y = self._next_y_position(elapsed)
         # Check if object is off the left of the screen
         if new_x < 0:
             self.x_pos = 0
@@ -120,17 +120,17 @@ class Pong_Object(object):
         else:
             self.y_pos = new_y
 
-    def _next_x_position(self):
+    def _next_x_position(self, elapsed):
         """ Returns the x position of the object after its next update.
         Does not actually modify the object's position.
         """
-        return self.x_pos + self.x_vel * self.speed
+        return self.x_pos + self.x_vel * (self.speed * elapsed)
 
-    def _next_y_position(self):
+    def _next_y_position(self, elapsed):
         """ Returns the y position of the object after its next update.
         Does not actually modify the object's position.
         """
-        return self.y_pos + self.y_vel * self.speed
+        return self.y_pos + self.y_vel * (self.speed * elapsed)
 
 class Paddle(Pong_Object):
     """ A class for representing a paddle in pong.  Inherits from Pong_Object. """
@@ -155,20 +155,20 @@ class Ball(Pong_Object):
         Pong_Object.__init__(self, ball_diameter, ball_diameter, x, y,
                 move_speed, screen, obj_color=obj_color)
 
-    def get_position(self, p1, p2):
+    def get_position(self, p1, p2, elapsed):
         """ 
         Override the base class's get_position method so that we can pass in the
         paddles.  This is necessary to handle collision with paddles.
         """
-        self.update_position(p1, p2)
+        self.update_position(p1, p2, elapsed)
         return (self.x_pos, self.y_pos)
 
-    def _check_for_paddle_collision(self, paddle1, paddle2):
+    def _check_for_paddle_collision(self, paddle1, paddle2, elapsed):
         """ A private method for handling paddle collision. If the ball makes
         contact with a paddle, its direction on the x axis will be reversed.
         """
-        new_x = self._next_x_position()
-        new_y = self._next_y_position()
+        new_x = self._next_x_position(elapsed)
+        new_y = self._next_y_position(elapsed)
         # check if the ball will collide with the right paddle (player 1)
         if new_x > paddle1.x_pos-self.width and new_x < paddle1.x_pos + paddle1.width \
                 and new_y > paddle1.y_pos and new_y < paddle1.y_pos + paddle1.height:
@@ -182,27 +182,27 @@ class Ball(Pong_Object):
             self.x_vel = 1
             self.y_vel = delta_y * 0.1 + (paddle2.y_vel / 2)
 
-    def _check_for_wall_collision(self ):
+    def _check_for_wall_collision(self, elapsed):
         """ A private method for handling wall collision. We only need to bounce off
         the top and bottom of the screen.
         """
-        new_y = self._next_y_position()
+        new_y = self._next_y_position(elapsed)
         # check for collision with the bottom of the screen
         if new_y > self._screen_info.height - self.height:
-            self.y_vel =  -1
+            self.y_vel *= -1
         # check for collision with the top of the screen
         elif new_y < 0:
-            self.y_vel = 1
+            self.y_vel *= -1
 
-    def update_position(self, p1, p2):
+    def update_position(self, p1, p2, elapsed):
         """
         Override the base class's update_position method so we can handle
         ball/paddle collision.
         """
-        self._check_for_paddle_collision(p1, p2)
-        self._check_for_wall_collision()
-        self.x_pos = self._next_x_position()
-        self.y_pos  = self._next_y_position()
+        self._check_for_paddle_collision(p1, p2, elapsed)
+        self._check_for_wall_collision(elapsed)
+        self.x_pos = self._next_x_position(elapsed)
+        self.y_pos  = self._next_y_position(elapsed)
 
     def get_surface(self):
         """ Return a surface for the ball.  The surface will have the width and height

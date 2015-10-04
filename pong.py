@@ -8,8 +8,8 @@ pygame.init()
 
 font = pygame.font.Font(pygame.font.get_default_font(), 16)
 
-AI_MAX_INTEL = 10
-AI_MIN_INTEL = 20
+AI_MAX_INTEL = 0
+AI_MIN_INTEL = 10
 enemy_ai = Choppy_AI(AI_MIN_INTEL, AI_MAX_INTEL)
 
 # constants
@@ -20,11 +20,11 @@ SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
 PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 50
-PADDLE_SPEED = 7
+PADDLE_SPEED = 300
 
 BALL_WIDTH = 10
 BALL_HEIGHT = 10
-BALL_SPEED = 4
+BALL_SPEED = 200
 
 FPS = 60
 
@@ -62,9 +62,11 @@ ball_surface = ball.get_surface()
 # game state variables
 done = False
 in_play = False
+elapsed = 0.0
 
 # Main game loop
 while not done:
+    seconds = elapsed / 1000.0
     caption = 'This AI is ' + str(enemy_ai.reaction_time) + '% dumb!'
     caption += ' It\'s hit zone is ' + str(enemy_ai.hit_zone)
     text = font.render(caption, 0, WHITE)
@@ -96,11 +98,11 @@ while not done:
     # Draw to game
     SCREEN.fill(BLACK)
     SCREEN.blit(text, (0, 0))
-    SCREEN.blit(paddle1_surface, paddle1.get_position())
-    SCREEN.blit(paddle2_surface, paddle2.get_position())
-    SCREEN.blit(ball_surface, ball.get_position(paddle1, paddle2))
+    SCREEN.blit(paddle1_surface, paddle1.get_position(seconds))
+    SCREEN.blit(paddle2_surface, paddle2.get_position(seconds))
+    SCREEN.blit(ball_surface, ball.get_position(paddle1, paddle2, seconds))
     pygame.display.flip()
-    clock.tick(FPS)
+    elapsed = clock.tick(FPS)
 
 pygame.quit()
 sys.exit()
