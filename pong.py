@@ -57,7 +57,7 @@ ball_surface = ball.get_surface()
 done = False
 in_play = False
 elapsed = 0.0
-
+show_stats = False
 decoy = None
 
 # Main game loop
@@ -67,6 +67,8 @@ while not done:
         if event.type == QUIT:
             done = True
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                show_stats = not show_stats
             if event.key == pygame.K_q:
                 done = True
             if event.key == pygame.K_UP:
@@ -82,14 +84,16 @@ while not done:
             if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                 paddle1.y_vel = 0
     if enemy_ai.focused:
-        paddle2.y_vel = enemy_ai.update(paddle2, decoy)
+        if abs(paddle2.y_pos - ball.y_pos) < 50 and ball.x_pos < 100:
+            paddle2.y_vel = enemy_ai.update(paddle2, ball)
+        else:
+            paddle2.y_vel = enemy_ai.update(paddle2, decoy)
         if ball.x_vel > 0:
             enemy_ai.focused = False
             decoy = None
     else:
          if ball.x_vel <= -1 and (ball.y_vel > 1 or ball.y_vel < -1):
             decoy = enemy_ai.focus(ball, paddle1, paddle2, seconds)
-            print(decoy.y_pos)
          paddle2.y_vel = enemy_ai.update(paddle2, ball)
     if ball.x_vel == 0 and ball.y_vel == 0:
         paddle2.y_vel = enemy_ai.update(paddle2, ball)
@@ -114,11 +118,11 @@ while not done:
             (SCREEN_WIDTH / 4, SCREEN_HEIGHT - 25))
     SCREEN.blit(font.render(str(paddle2.score), 0, WHITE), 
             (SCREEN_WIDTH - (SCREEN_WIDTH / 4), SCREEN_HEIGHT - 25))
-    SCREEN.blit(font.render('HIT-ZONE: ' + str(enemy_ai.hit_zone) + ' INT: ' + \
-            str(enemy_ai.reaction_time), 0, WHITE), (50, 100))
-
-    if enemy_ai.focused:
-        SCREEN.blit(font.render('FOCUSED', 0, WHITE), (50, 50))
+    if show_stats:
+        SCREEN.blit(font.render('HIT-ZONE: ' + str(enemy_ai.hit_zone) + ' INT: ' + \
+                str(enemy_ai.reaction_time), 0, WHITE), (50, 100))
+        if enemy_ai.focused:
+            SCREEN.blit(font.render('FOCUSED', 0, WHITE), (50, 50))
     
     pygame.display.flip()
     elapsed = clock.tick(FPS)

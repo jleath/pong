@@ -44,28 +44,25 @@ class Choppy_AI(object):
         self.hit_zone = random.randint(self.hit_zone_min, self.hit_zone_max)
 
     def unfocus(self):
-        self.reaction_time = self.set_intelligence()
+        self.set_intelligence()
         self.focused = False
 
     def focus(self, ball, paddle1, paddle2, elapsed):
         self.reaction_time *= 3
         self.focused = True
-        ball_copy = Ball(ball.width, ball.x_pos, ball.y_pos, ball.speed,
-                ball._screen_info, None, None, None, None)
-        ball_copy.x_vel = ball.x_vel
-        ball_copy.y_vel = ball.y_vel
+        ball_copy = ball.copy()
+        screen_height = ball_copy._screen_info.height
         while (ball_copy.x_pos > PADDLE_GAP):
-            while ball_copy.y_pos > 0 and ball_copy.y_pos < ball_copy._screen_info.height:
+            while ball_copy.y_pos > 0 and ball_copy.y_pos < screen_height:
                 ball_copy.x_pos += ball_copy.x_vel * (ball_copy.speed * elapsed)
                 ball_copy.y_pos += ball_copy.y_vel * (ball_copy.speed * elapsed)
                 if ball_copy.x_pos < 0:
                     break
             if ball_copy.y_pos <= 0 and ball_copy.x_pos > 0:
                 ball_copy.y_pos = 1
-            if ball_copy.y_pos >= ball_copy._screen_info.height and ball_copy.x_pos > 0:
-                ball_copy.y_pos = ball_copy._screen_info.height - 1
+            if ball_copy.y_pos >= screen_height and ball_copy.x_pos > 0:
+                ball_copy.y_pos = screen_height - 1
             ball_copy.y_vel *= -1
-        print('expected y-intercept:', ball_copy.y_pos)
         return ball_copy
         
         
@@ -202,6 +199,13 @@ class Ball(Pong_Object):
         self.score_snd = score_sound
         self.point_lost_snd = point_lost_sound
 
+    def copy(self):
+        new_ball = Ball(self.width, self.x_pos, self.y_pos, self.speed, 
+                self._screen_info, None, None, None, None)
+        new_ball.x_vel = self.x_vel
+        new_ball.y_vel = self.y_vel
+        return new_ball
+
     def get_position(self, p1, p2, elapsed):
         """ 
         Override the base class's get_position method so that we can pass in the
@@ -221,7 +225,7 @@ class Ball(Pong_Object):
                 and new_y > paddle1.y_pos and new_y < paddle1.y_pos + paddle1.height:
             delta_y = self.y_pos - (paddle1.y_pos + paddle1.height / 2)
             self.x_vel = -1
-            self.y_vel = delta_y * 0.075 + (paddle1.y_vel / 2)
+            self.y_vel = delta_y * 0.075 #+ (paddle1.y_vel / 2)
             if self.bat_hit_snd:
                 self.bat_hit_snd.play()
         # check if the ball will collide with the left paddle (player 2)
@@ -229,7 +233,7 @@ class Ball(Pong_Object):
                 and new_y > paddle2.y_pos and new_y < paddle2.y_pos + paddle2.height:
             delta_y = self.y_pos - (paddle2.y_pos + paddle2.height / 2)
             self.x_vel = 1
-            self.y_vel = delta_y * 0.075 + (paddle2.y_vel / 2)
+            self.y_vel = delta_y * 0.075 #+ (paddle2.y_vel / 2)
             if self.bat_hit_snd:
                 self.bat_hit_snd.play()
 
@@ -279,7 +283,6 @@ class Ball(Pong_Object):
             return True
         elif self.x_pos < 0:
             self.score_snd.play()
-            print('Actual y-intercept:', self.y_pos)
             paddle2.score += 1
             return True
         else:
