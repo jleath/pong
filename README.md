@@ -13,7 +13,9 @@ the paddle.
 When the AI detects this increased speed, it will enter a 'focused' state.  It will attempt
 to calculate the eventual position of the ball when the ball reaches the AI's paddle.  This results
 in a reduction in reaction time.  So the AI can approximate the location it needs to move its paddle,
-but it will be slower in getting it there.
+but it will be slower in getting it there. The effects of this focused state have a compounding effect.
+Each time the AI enters the focused state, it becomes more difficult to react in time.  This effect
+is cleared when either the AI or the player score a point.
 
 The hit-zone is the AI's attempt to take advantage of the bounce-position dependant speed.  For now,
 the hit zone is assigned and changes randomly.  At some point I will change this so that the AI
@@ -24,3 +26,5 @@ To play the game:
     space bar.  You control the right paddle, and use the up and down keys to do so.  If the ball
     passes your paddle, you lose the round and your opponent scores one point.  There is no score
     limit yet.  To quit, press the q key at any time.
+
+    To show some vague information about the AI state during the game, press the 's' key.
