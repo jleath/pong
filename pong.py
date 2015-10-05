@@ -16,7 +16,7 @@ if not pygame.display.get_init():
 
 font = pygame.font.Font(pygame.font.get_default_font(), 16)
 
-enemy_ai = Choppy_AI(AI_MIN_INTEL, AI_MAX_INTEL, AI_HIT_ZONE_MIN, AI_HIT_ZONE_MAX)
+enemy_ai = Enemy_AI(AI_MIN_REACT, AI_MAX_REACT, AI_HIT_ZONE_MIN, AI_HIT_ZONE_MAX)
 
 # font surfaces
 MUTING_INST = font.render(MUTE_INST_TEXT, 0, WHITE)
@@ -78,7 +78,7 @@ while not done:
             if event.key == pygame.K_SPACE and not in_play:
                 ball.x_vel = random.choice([1, -1])
                 ball.y_vel = random.choice([1, -1])
-                enemy_ai.set_intelligence()
+                enemy_ai.set_reaction_time()
                 in_play = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
@@ -119,10 +119,15 @@ while not done:
     SCREEN.blit(font.render(str(paddle2.score), 0, WHITE), 
             (SCREEN_WIDTH - (SCREEN_WIDTH / 4), SCREEN_HEIGHT - 25))
     if show_stats:
-        SCREEN.blit(font.render('HIT-ZONE: ' + str(enemy_ai.hit_zone) + ' INT: ' + \
+        SCREEN.blit(font.render('HIT-ZONE: ' + str(enemy_ai.hit_zone) + ' REACT: ' + \
                 str(enemy_ai.reaction_time), 0, WHITE), (50, 100))
         if enemy_ai.focused:
             SCREEN.blit(font.render('FOCUSED', 0, WHITE), (50, 50))
+            SCREEN.blit(font.render('AI PADDLE: ' + str(int(paddle2.x_pos)) + ', ' + str(int(paddle2.y_pos)),
+                0, WHITE), (50, 25))
+        if decoy is not None:
+            SCREEN.blit(font.render('Expected intercept: ' + str(int(decoy.x_pos)) + ', ' + str(int(decoy.y_pos)),
+                0, WHITE), (300, 25))
     
     pygame.display.flip()
     elapsed = clock.tick(FPS)
